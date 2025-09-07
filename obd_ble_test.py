@@ -47,6 +47,7 @@ def decode_response(response_bytes):
             else:
                 output += str(data_snippet)
         except IndexError:
+            output += str(data_snippet)
             continue
     return output
 
