@@ -9,6 +9,7 @@ TX_CHAR = "0000fff2-0000-1000-8000-00805f9b34fb"
 RX_CHAR = "0000fff1-0000-1000-8000-00805f9b34fb"
 
 commands = {"rpm":"30313043300d", "echo":"415445300d", "device":"4154490d", "speed": "30313044300d", "fuel":"30313545300d"}
+commands_binary = {'echo':b'ATE0\r', 'device':b'ATI\r', 'rpm':b'010C0\r', 'speed': b'010D0\r', 'fuel':b'015E0\r'}
 response_data = []
 
 
@@ -67,15 +68,15 @@ def notification_handler(sender, data: bytearray):
         print("No response")
 
 
-async def send_obd2_command(client, command):
+async def send_obd2_command(client, command_binary):
     # Send command as bytes
-    await client.write_gatt_char(TX_CHAR, bytes.fromhex(command), response=True)
+    await client.write_gatt_char(TX_CHAR, command_binary, response=True)
     # Wait for response
     await asyncio.sleep(1)
 
 
 async def main():
-    command = commands["speed"]
+    command = commands_binary["speed"]
     async with BleakClient(MAC) as client:
         # Enable notifications
         await client.start_notify(RX_CHAR, notification_handler)
