@@ -56,6 +56,9 @@ def decode_response(response_bytes):
 # Incoming notifications
 # Receive response bytearray
 def notification_handler(sender, data: bytearray):
+
+    # TODO
+    # Check if data arrives
     response_data.append(data)
 
     # Process response

@@ -31,6 +31,7 @@ async def send_obd2_command(client, command):
     if response_data:
         # Combine all notification data
         full_response = b''.join(response_data)
+        # Decode to HEX
         ascii_response = full_response.decode('ascii', errors='ignore').strip()
         print(ascii_response)
     else:
