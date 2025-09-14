@@ -9,10 +9,9 @@ MAC = "81:23:45:67:89:BA"
 TX_CHAR = "0000fff2-0000-1000-8000-00805f9b34fb"
 RX_CHAR = "0000fff1-0000-1000-8000-00805f9b34fb"
 
-commands = {"rpm":"30313043300d", "echo":"415445300d", "device":"4154490d", "speed": "30313044300d", "fuel":"30313545300d"}
-commands_binary = {'echo':b'ATE0\r', 'device':b'ATI\r', 'rpm':b'010C0\r', 'speed': b'010D0\r', 'fuel':b'015E0\r'}
-response_data = []
+commands_binary = {'echo':b'ATE0\r', 'device':b'ATI\r', 'rpm':b'010C0\r', 'speed': b'010D0\r'}
 
+response_data = []
 metrics = {'speed':0,'rpm':0.0}
 
 rpm_gauge = Gauge('obd_ble_rpm', 'RPM Value', ['device_id'])
@@ -20,13 +19,14 @@ kmh_gauge = Gauge('obd_ble_kmh', 'Speed Value', ['device_id'])
 
 DEVICE_ID = "ELM327"
 PROMETHEUS_PORT = 9100
-COLLECTION_INTERVAL = 10
+
 
 def calculate_rpm(high_bit, low_bit):
     return (high_bit * 256 + low_bit) / 4
 
 
 def decode_response(response_bytes):
+    output = ""
     response_array=response_bytes.decode('ascii', errors='ignore').strip().split('\n')
     output = str()
     for data_snippet in response_array:
@@ -64,7 +64,7 @@ def decode_response(response_bytes):
 # Incoming notifications
 # Receive response bytearray
 def notification_handler(sender, data: bytearray):
-
+    response_data = []
     # TODO
     # Check if data arrives
     response_data.append(data)
@@ -91,10 +91,9 @@ async def main():
     start_http_server(PROMETHEUS_PORT)
     print(f"Exporter exporting on {PROMETHEUS_PORT}")
 
-    # command = commands_binary["echo"]
-
     while True:
         for key in commands_binary:
+            #print(key)
             command = commands_binary[key]
             async with BleakClient(MAC) as client:
                 # Enable notifications
@@ -108,7 +107,6 @@ async def main():
 
                 # Stop notifications
                 await client.stop_notify(RX_CHAR)
-        await asyncio.sleep(COLLECTION_INTERVAL)
 
 if __name__ == "__main__":
     try:
