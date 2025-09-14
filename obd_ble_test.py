@@ -17,15 +17,10 @@ def calculate_rpm(high_bit, low_bit):
     return (high_bit * 256 + low_bit) / 4
 
 
-def calculate_kmh(hex_bit):
-    return int(hex_bit[6:8],16)
-
-
 def decode_response(response_bytes):
     response_array=response_bytes.decode('ascii', errors='ignore').strip().split('\n')
     output = str()
     for data_snippet in response_array:
-
         try:
             # Service 01 Response - Show current data
             if data_snippet[:2] == "41":
@@ -40,15 +35,15 @@ def decode_response(response_bytes):
                         return output
                     # Speed
                     case "0D":
-                        val_hex = int(data_snippet[6:8], 16)
+                        val_speed = int(data_snippet[6:8], 16)
 
-                        output = f"Speed: {calculate_kmh(val_hex)}"
+                        output = f"Speed: {val_speed}"
                         return output
             # Other command given or response is undefined
             else:
-                output += str(data_snippet)
+                output += str(data_snippet).replace("\r","")
         except IndexError:
-            output += str(data_snippet)
+            output += str(data_snippet).replace("\r","")
             continue
     return output
 
@@ -79,7 +74,7 @@ async def send_obd2_command(client, command_binary):
 
 
 async def main():
-    command = commands_binary["speed"]
+    command = commands_binary["echo"]
     async with BleakClient(MAC) as client:
         # Enable notifications
         await client.start_notify(RX_CHAR, notification_handler)
